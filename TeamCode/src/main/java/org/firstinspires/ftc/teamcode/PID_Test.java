@@ -4,8 +4,10 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.HardwareDevice;
 import com.qualcomm.robotcore.util.Range;
 import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.hardware.GyroSensor;
 
 
 @TeleOp(name="fghfkj", group="Linear Opmode")
@@ -34,6 +36,7 @@ public class PID_Test extends LinearOpMode {
     @Override
     public void runOpMode() {
 
+        //HardwareDevice.Manufacturer;
         arm = hardwareMap.get(DcMotor.class, "arm_motor");
         arm.setDirection(DcMotor.Direction.FORWARD);
 
@@ -44,7 +47,7 @@ public class PID_Test extends LinearOpMode {
 
             //1120 tics per rev for 40:1
             goal += (gamepad1.left_stick_y*10);
-            double input = 360*(arm.getCurrentPosition()/1120);
+            double input = 0;
             double oldError = error;
             error = goal - input;
 

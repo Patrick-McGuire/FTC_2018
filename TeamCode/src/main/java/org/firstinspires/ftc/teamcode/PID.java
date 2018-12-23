@@ -3,12 +3,16 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 public class PID {
-
-    public double Kp, Ki, Kd;
+    public double kP, kI, kD;
     public double error, sum, lastTime = 0;
     public ElapsedTime runtime;
+    public double min_I = -.5;
+    public double max_I = .5;
 
-    public PID(double Kp, double Ki, double Kd){
+    public PID(double P, double I, double D){
+        kP = P;
+        kI = I;
+        kD = D;
         runtime = new ElapsedTime();
     }
 
@@ -21,21 +25,27 @@ public class PID {
 
         //PID Math
         //P math
-        double p = Kp * error;
+        double p = kP * error;
 
+        //I math
         if (Math.abs(error) < 15) {
-            //I math
              sum += error * deltaTime;
         } else {
             sum = 0;
         }
-        double i = Ki * sum;
-        i = Range.clip(i, -.1, .1);
+        double i = kI * sum;
+        i = Range.clip(i, min_I, max_I);
 
         //D math
-        double d = Kd * ((error - oldError) / deltaTime);
+        double d = kD * ((error - oldError) / deltaTime);
 
         //PID calculations
         return (p + i + d);
+    }
+
+    public void changeConstants(double P, double I, double D) {
+        kP = P;
+        kI = I;
+        kD = D;
     }
 }

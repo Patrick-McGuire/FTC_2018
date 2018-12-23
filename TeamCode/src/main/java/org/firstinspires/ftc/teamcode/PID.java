@@ -43,7 +43,7 @@ public class PID {
         return (p + i + d);
     }
 
-    public void changeConstants(double P, double I, double D) {
+    public void setConstants(double P, double I, double D) {
         kP = P;
         kI = I;
         kD = D;

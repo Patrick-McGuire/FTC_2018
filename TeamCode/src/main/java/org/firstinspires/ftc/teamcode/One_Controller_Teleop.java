@@ -152,7 +152,7 @@ public class One_Controller_Teleop extends LinearOpMode {
             }
 
             // Send calculated power to wheels
-            driveTrain.driveSteering(steering, drivePower);
+            driveTrain.driveSteering(drivePower, steering*-1);
 
             climber.setPower(climbPower);
             servo1.setPower(intakePower);

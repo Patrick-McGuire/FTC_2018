@@ -6,8 +6,9 @@ import com.qualcomm.robotcore.util.Range;
 public class tankDrive {
     private DcMotor leftMotor, rightMotor = null;
 
-    public tankDrive(DcMotor leftMotor, DcMotor rightMotor){
-
+    public tankDrive(DcMotor left, DcMotor right){
+        leftMotor = left;
+        rightMotor = right;
     }
 
     public void driveSteering(double power, double steering) {

@@ -26,3 +26,9 @@ build/
 
 *ASUS_PC_01*
 
+
+/.gradle/
+/.idea/
+/doc/
+/gradle/
+/libs/

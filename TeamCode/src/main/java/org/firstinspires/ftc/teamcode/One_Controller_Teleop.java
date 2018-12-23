@@ -70,6 +70,8 @@ public class One_Controller_Teleop extends LinearOpMode {
         arm.setDirection(DcMotor.Direction.FORWARD);
         climber = hardwareMap.get(DcMotor.class, "climber_motor");
 
+        tankDrive driveTrain = new tankDrive(rightDrive, leftDrive);
+
         arm.setMode((DcMotor.RunMode.STOP_AND_RESET_ENCODER));
         arm.setMode((DcMotor.RunMode.STOP_AND_RESET_ENCODER));
 
@@ -83,22 +85,17 @@ public class One_Controller_Teleop extends LinearOpMode {
             arm.setMode((DcMotor.RunMode.RUN_WITHOUT_ENCODER));
 
             // Setup a variable for each drive wheel to save power level for telemetry
-            double leftPower;
-            double rightPower;
             double armPower;
             double climbPower;
             int intakePower;
 
-            int incoder = arm.getCurrentPosition();
+            int encoderValue = arm.getCurrentPosition();
             boolean other = true;
 
             // Math for controlling the robot
-            double driveBackward = gamepad1.left_trigger;
-            double driveForward = gamepad1.right_trigger;
-            double turn  =  gamepad1.left_stick_x;
+            double drivePower = gamepad1.right_trigger - gamepad1.left_trigger;
+            double steering  =  gamepad1.left_stick_x;
             double armMove = gamepad1.right_stick_y;
-            leftPower    = Range.clip(driveForward - driveBackward + (turn), -1.0, 1.0) ;
-            rightPower   = Range.clip(driveForward - driveBackward - (turn), -1.0, 1.0) ;
             armPower   = Range.clip(armMove, -1.0, 1.0) ;
 
             // Intake control
@@ -127,18 +124,18 @@ public class One_Controller_Teleop extends LinearOpMode {
                 climbPower = 0;
             }
 
-            telemetry.addData("encoder", arm.getCurrentPosition());
+            telemetry.addData("encoderValue", arm.getCurrentPosition());
 
             if (-.1 < gamepad1.right_stick_y && gamepad1.right_stick_y < .1) {
                 telemetry.addData("yes",0);
                 other = false;
                 arm.setMode((DcMotor.RunMode.RUN_WITHOUT_ENCODER));
-                if (incoder<-25) {
+                if (encoderValue<-25) {
                     arm.setPower(.2);
                     telemetry.addData("yes2",0);
                     other = true;
                 }
-                else if (incoder>25) {
+                else if (encoderValue>25) {
                     arm.setPower(-.2);
                     telemetry.addData("yes3",0);
                     other = true;
@@ -155,8 +152,8 @@ public class One_Controller_Teleop extends LinearOpMode {
             }
 
             // Send calculated power to wheels
-            leftDrive.setPower(leftPower);
-            rightDrive.setPower(rightPower);
+            driveTrain.driveSteering(steering, drivePower);
+
             climber.setPower(climbPower);
             servo1.setPower(intakePower);
             servo2.setPower(intakePower*-1);
@@ -185,7 +182,7 @@ public class One_Controller_Teleop extends LinearOpMode {
 
                 // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
-            telemetry.addData("Motors", "left (%.2f), right (%.2f), arm (%.2f), climber (%.2f)", leftPower, rightPower, armPower, climbPower);
+            //telemetry.addData("Motors", "left (%.2f), right (%.2f), arm (%.2f), climber (%.2f)", leftPower, rightPower, armPower, climbPower);
             telemetry.update();
         }
     }

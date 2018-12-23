@@ -22,8 +22,8 @@ public class PID_Test extends LinearOpMode {
     Orientation angles;
 
     double Kp = .1;
-    double Ki = .000006;
-    double Kd = 9.6;
+    double Ki = .000106;
+    double Kd = 8.6;
     double targetAngle = 0;
 
     double steering = 0;
@@ -60,30 +60,38 @@ public class PID_Test extends LinearOpMode {
             if (gamepad1.y) {
                 steering = driveTrain_PID.runPID(targetAngle, angle);
                 driveTrain.driveSteering(0, steering);
+            } else {
+                driveTrain.driveSteering(0, 0);
             }
 
             if (gamepad1.a) {
-                Ki += -.000001;
+                Ki += -.00001;
+                sleep(200);
             }
             if (gamepad1.b) {
-                Ki += .000001;
+                Ki += .00001;
+                sleep(200);
             }
             if (gamepad1.dpad_up) {
                 Kp += -.01;
+                sleep(200);
             }
             if (gamepad1.dpad_down) {
                 Kp += .01;
+                sleep(200);
             }
             if (gamepad1.left_bumper) {
-                Kd += -.1;
+                Kd += -.5;
+                sleep(200);
             }
             if (gamepad1.x) {
-                Kd += .1;
+                Kd += .5;
+                sleep(200);
             }
 
             driveTrain_PID.setConstants(Kp, Ki, Kd);
 
-            telemetry.addData("stuff", " input (%.2f), steering power (%.2f), Kp (%.2f, Goal (%.2f), Kd (%.2f), Ki (%.2f)", angle, steering, Kp, targetAngle, Kd, Ki * 100000);
+            telemetry.addData("stuff", " input (%.2f), steering power (%.2f), Kp (%.2f, Goal (%.2f), Kd (%.2f), Ki (%.2f), error (%.2f)", angle, steering, Kp, targetAngle, Kd, Ki * 100000, targetAngle-angle);
             telemetry.update();
         }
     }

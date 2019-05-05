@@ -44,8 +44,8 @@ public class Crater_Crossing_Auto extends LinearOpMode {
     private DcMotor rightDrive = null;
     private DcMotor arm = null;
 
-    static final double armSpeed = Global_Variables.armSpeed;
-    static final double driveSpeed = Global_Variables.driveSpeed;
+    static final double armSpeed = .5;
+    static final double driveSpeed = .7;
 
     @Override
     public void runOpMode() {

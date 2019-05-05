@@ -4,6 +4,7 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
@@ -14,29 +15,38 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
 
-@TeleOp(name="CL_Teleop", group="Linear Opmode")
-public class CL_Teleop extends LinearOpMode {
+@TeleOp(name="CL_Teleop_arm", group="Linear Opmode")
+public class CL_Teleop_Arm extends LinearOpMode {
 
     // Declare OpMode members.
     BNO055IMU imu;
     private ElapsedTime runtime = new ElapsedTime();
     private DcMotor leftDrive = null;
     private DcMotor rightDrive = null;
+    private DcMotor arm = null;
     Orientation angles;
+    private DcMotor climber = null;
+    private CRServo servo1 = null;
+    private CRServo servo2 = null;
 
     public double angleOfset = 0;
 
     @Override
     public void runOpMode() {
 
-        double Kp = .1;
+        double Kp = .03;
         double Ki = .000106;
-        double Kd = 8.6;
+        double Kd = 8;
         double targetAngle = 0;
 
         double steering = 0;
 
+        double KpArm = .005;
+        double KiArm = 0;
+        double KdArm = .4;
+        double armGoal = 0;
         PID driveTrain_PID = new PID(Kp, Ki, Kd);
+        PID arm_PID = new PID(KpArm, KiArm, KdArm);
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
 
@@ -46,13 +56,21 @@ public class CL_Teleop extends LinearOpMode {
         //HardwareDevice.Manufacturer;
         leftDrive = hardwareMap.get(DcMotor.class, "left_drive");
         rightDrive = hardwareMap.get(DcMotor.class, "right_drive");
+        arm = hardwareMap.get(DcMotor.class, "arm_motor");
+        servo1 = hardwareMap.get(CRServo.class, "servo1");
+        servo2 = hardwareMap.get(CRServo.class, "servo2");
+        climber = hardwareMap.get(DcMotor.class, "climber_motor");
 
-        //Ser default direction
+        //Set default direction
         leftDrive.setDirection(DcMotor.Direction.REVERSE);
         rightDrive.setDirection(DcMotor.Direction.FORWARD);
+        arm.setDirection(DcMotor.Direction.FORWARD);
+        climber.setDirection(DcMotor.Direction.FORWARD);
 
         tankDrive driveTrain = new tankDrive(rightDrive, leftDrive);
 
+        arm.setMode((DcMotor.RunMode.STOP_AND_RESET_ENCODER));
+        boolean armOn = true;
 
         waitForStart();
         runtime.reset();
@@ -83,8 +101,64 @@ public class CL_Teleop extends LinearOpMode {
                 targetAngle = -90;
             }
 
+            //intake code
+            if (gamepad1.left_bumper) {
+                servo1.setPower(1);
+                servo2.setPower(-1);
+            } else if (gamepad1.left_stick_button) {
+                servo1.setPower(-1);
+                servo2.setPower(1);
+            } else {
+                servo1.setPower(0);
+                servo2.setPower(0);
+            }
+
+            //climber code
+            if (gamepad1.dpad_up) {
+                climber.setPower(1);
+                armOn = false;
+            } else if (gamepad1.dpad_down) {
+                climber.setPower(-1);
+                armOn = false;
+            } else {
+                climber.setPower(0);
+            }
+            if (gamepad1.right_stick_button){
+                armOn = true;
+            }
+            //armc ode
+            arm.setMode((DcMotor.RunMode.RUN_WITHOUT_ENCODER));
+
+            int armEncoder = arm.getCurrentPosition();
+            double armPower = arm_PID.runPID(armGoal, armEncoder);
+            double test = arm.getCurrentPosition();
+
+            if(gamepad1.y){
+                armGoal = 950;
+            }
+            if(gamepad1.x){
+                armGoal = 300;
+            }
+            if(gamepad1.b){
+                armGoal = 1950;
+            }
+            if(gamepad1.a){
+                armGoal = 1700;
+            }
+
+            if(gamepad1.start){
+                arm.setMode((DcMotor.RunMode.STOP_AND_RESET_ENCODER));
+                armGoal = 0;
+            }
+            if (!gamepad1.right_stick_button && armOn) {
+                arm.setPower(armPower);
+            } else {
+                arm.setPower(0);
+            }
+
+            armGoal = armGoal + (gamepad1.right_stick_y * 10);
             // Show the elapsed game time and wheel power.
-            telemetry.addData("stuff", " input (%.2f), steering power (%.2f), Kp (%.2f, Goal (%.2f), Kd (%.2f), Ki (%.2f), error (%.2f)", angle, steering, Kp, targetAngle, Kd, Ki * 100000, targetAngle-angle);
+            telemetry.addData("stuff", " armPower (%.2f), armEncoder (%.2f), Kp (%.2f, Goal (%.2f), Kd (%.2f), Ki (%.2f), error (%.2f)", armPower, test, Kp, targetAngle, Kd, Ki * 100000, targetAngle-angle);
             telemetry.update();
         }
     }
@@ -99,7 +173,7 @@ public class CL_Teleop extends LinearOpMode {
             deltaAngle += 360;
         else if (deltaAngle > 180)
             deltaAngle -= 360;
-        
+
         return(deltaAngle);
     }
 

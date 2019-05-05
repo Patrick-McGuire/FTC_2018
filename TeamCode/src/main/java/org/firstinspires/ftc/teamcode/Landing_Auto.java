@@ -45,8 +45,8 @@ public class Landing_Auto extends LinearOpMode {
     private DcMotor arm = null;
     private DcMotor climber = null;
 
-    static final double armSpeed = Global_Variables.armSpeed;
-    static final double turnSpeed = Global_Variables.turnSpeed;
+    static final double armSpeed = .5;
+    static final double turnSpeed = .5;
 
     @Override
     public void runOpMode() {

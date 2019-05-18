@@ -34,9 +34,9 @@ public class CL_Teleop_Arm extends LinearOpMode {
     @Override
     public void runOpMode() {
 
-        double Kp = .03;
-        double Ki = .000106;
-        double Kd = 8;
+        double Kp = .02; //.03;
+        double Ki = 0; //.000106;
+        double Kd = 0; //8;
         double targetAngle = 0;
 
         double steering = 0;
@@ -134,16 +134,16 @@ public class CL_Teleop_Arm extends LinearOpMode {
             double test = arm.getCurrentPosition();
 
             if(gamepad1.y){
-                armGoal = 950;
+                armGoal = 850;
             }
             if(gamepad1.x){
-                armGoal = 300;
+                armGoal = 400;
             }
             if(gamepad1.b){
-                armGoal = 1950;
+                armGoal = 1350;
             }
             if(gamepad1.a){
-                armGoal = 1700;
+                armGoal = 1600;
             }
 
             if(gamepad1.start){

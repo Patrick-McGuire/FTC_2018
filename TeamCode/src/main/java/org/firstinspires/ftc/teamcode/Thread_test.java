@@ -34,89 +34,80 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
-@Autonomous(name="Landing", group="Linear Opmode")
-public class Landing_Auto extends LinearOpMode {
+import java.util.concurrent.SynchronousQueue;
+
+@Autonomous(name="thing", group="Linear Opmode")
+public class Thread_test extends LinearOpMode {
 
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
+
+    private DcMotor arm = null;
     private DcMotor leftDrive = null;
     private DcMotor rightDrive = null;
-    private DcMotor arm = null;
-    private DcMotor climber = null;
 
-    static final double armSpeed = .5;
-    static final double turnSpeed = .5;
+
+
+    //Thread stuff
+    public DataPass DataPassz = new DataPass();
+    private Thread1 Thread1z = new Thread1(DataPassz);
+
 
     @Override
     public void runOpMode() {
-        telemetry.addData("Status", "Initialized");
-        telemetry.update();
+
+        double KpArm = .002;
+        double KiArm = 0;
+        double KdArm = .4;
+
+        double KpDist = .04;
+        double KiDist = 0;
+        double KdDist = .4;
+
+        //#0 arm goal
+        //#1 distance
+        //#2 angle
+        int[] goals = new int[3];
+
+        PID arm_PID = new PID(KpArm, KiArm, KdArm);
+        PID distance_PID = new PID(KpDist, KiDist, KdDist);
 
         // Stuff for hardware map
-        leftDrive  = hardwareMap.get(DcMotor.class, "left_drive");
-        rightDrive = hardwareMap.get(DcMotor.class, "right_drive");
         arm = hardwareMap.get(DcMotor.class, "arm_motor");
-        climber = hardwareMap.get(DcMotor.class, "climber_motor");
+        leftDrive = hardwareMap.get(DcMotor.class, "left_drive");
+        rightDrive = hardwareMap.get(DcMotor.class, "right_drive");
 
         // Set default motor direction
+        arm.setDirection(DcMotor.Direction.FORWARD);
         leftDrive.setDirection(DcMotor.Direction.REVERSE);
         rightDrive.setDirection(DcMotor.Direction.FORWARD);
-        arm.setDirection(DcMotor.Direction.FORWARD);
-        climber.setDirection(DcMotor.Direction.FORWARD);
+
+        arm.setMode((DcMotor.RunMode.STOP_AND_RESET_ENCODER));
+        leftDrive.setMode((DcMotor.RunMode.STOP_AND_RESET_ENCODER));
+
+        tankDrive driveTrain = new tankDrive(rightDrive, leftDrive);
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
         runtime.reset();
+        Thread1z.start();
+        while (opModeIsActive()) {
 
-        // Run arm
-        climber.setPower(-1);
-        runtime.reset();
-        while (opModeIsActive() && (runtime.seconds() < .25)) {
-            telemetry.addData("Path", "Leg 1: %2.5f S Elapsed", runtime.seconds());
-            telemetry.update();
+            arm.setMode((DcMotor.RunMode.RUN_WITHOUT_ENCODER));
+            leftDrive.setMode((DcMotor.RunMode.RUN_WITHOUT_ENCODER));
+            rightDrive.setMode((DcMotor.RunMode.RUN_WITHOUT_ENCODER));
+
+            goals = DataPassz.getGoals();
+
+            double armPower = arm_PID.runPID(goals[0], arm.getCurrentPosition());
+            double leftPower = distance_PID.runPID(goals[1], leftDrive.getCurrentPosition());
+            double rightPower = leftPower;
+
+            arm.setPower(armPower);
+            rightDrive.setPower(rightPower);
+            leftDrive.setPower(leftPower);
+
         }
 
-        // Run arm
-        climber.setPower(1);
-        runtime.reset();
-        while (opModeIsActive() && (runtime.seconds() < 1)) {
-            telemetry.addData("Path", "Leg 1: %2.5f S Elapsed", runtime.seconds());
-            telemetry.update();
-        }
-
-        // Stop arm
-        climber.setPower(0);
-
-        sleep(3000);
-
-        // Run arm
-        arm.setPower(1);
-        runtime.reset();
-        while (opModeIsActive() && (runtime.seconds() < .75)) {
-            telemetry.addData("Path", "Leg 1: %2.5f S Elapsed", runtime.seconds());
-            telemetry.update();
-        }
-
-        arm.setPower(0);
-
-        // Turn a direction
-        leftDrive.setPower(-1);
-        rightDrive.setPower(-1);
-        runtime.
-
-                reset();
-        while (opModeIsActive() && (runtime.seconds() < .75)) {
-            telemetry.addData("Path", "Leg 2: %2.5f S Elapsed", runtime.seconds());
-            telemetry.update();
-        }
-
-        // Turn a direction
-        leftDrive.setPower(-.7);
-        rightDrive.setPower(.7);
-        runtime.reset();
-        while (opModeIsActive() && (runtime.seconds() < 1)) {
-            telemetry.addData("Path", "Leg 2: %2.5f S Elapsed", runtime.seconds());
-            telemetry.update();
-        }
         }
     }

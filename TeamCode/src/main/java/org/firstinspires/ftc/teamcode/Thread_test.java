@@ -29,10 +29,16 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
+
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
 import java.util.concurrent.SynchronousQueue;
 
@@ -42,9 +48,11 @@ public class Thread_test extends LinearOpMode {
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
 
+    BNO055IMU imu;
     private DcMotor arm = null;
     private DcMotor leftDrive = null;
     private DcMotor rightDrive = null;
+    Orientation angles;
 
 
 
@@ -52,25 +60,37 @@ public class Thread_test extends LinearOpMode {
     public DataPass DataPassz = new DataPass();
     private Thread1 Thread1z = new Thread1(DataPassz);
 
+    public double angleOfset = 0;
 
     @Override
     public void runOpMode() {
 
-        double KpArm = .002;
+        double KpArm = .005;
         double KiArm = 0;
         double KdArm = .4;
 
-        double KpDist = .04;
+        double KpDist = .005;
         double KiDist = 0;
         double KdDist = .4;
+
+        double KpStr = .02;
+        double KiStr = .000106;
+        double KdStr = 0;
 
         //#0 arm goal
         //#1 distance
         //#2 angle
-        int[] goals = new int[3];
+        int[] goals;
+        int[] Inputs = new int[3];
+
+        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
 
         PID arm_PID = new PID(KpArm, KiArm, KdArm);
         PID distance_PID = new PID(KpDist, KiDist, KdDist);
+        PID steering_PID = new PID(KpStr, KiStr, KdStr);
+
+        imu = hardwareMap.get(BNO055IMU.class, "imu");
+        imu.initialize(parameters);
 
         // Stuff for hardware map
         arm = hardwareMap.get(DcMotor.class, "arm_motor");
@@ -87,6 +107,8 @@ public class Thread_test extends LinearOpMode {
 
         tankDrive driveTrain = new tankDrive(rightDrive, leftDrive);
 
+        zeroGyro();
+
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
         runtime.reset();
@@ -97,17 +119,45 @@ public class Thread_test extends LinearOpMode {
             leftDrive.setMode((DcMotor.RunMode.RUN_WITHOUT_ENCODER));
             rightDrive.setMode((DcMotor.RunMode.RUN_WITHOUT_ENCODER));
 
+            Inputs[0] = arm.getCurrentPosition();
+            Inputs[1] = leftDrive.getCurrentPosition();
+            Inputs[2] = (int) getAngle();
+
             goals = DataPassz.getGoals();
+            DataPassz.setInputs(Inputs);
 
             double armPower = arm_PID.runPID(goals[0], arm.getCurrentPosition());
-            double leftPower = distance_PID.runPID(goals[1], leftDrive.getCurrentPosition());
-            double rightPower = leftPower;
-
             arm.setPower(armPower);
-            rightDrive.setPower(rightPower);
-            leftDrive.setPower(leftPower);
 
+            double drivePower = distance_PID.runPID(goals[1], leftDrive.getCurrentPosition());
+            double steering = steering_PID.runPID(goals[2], getAngle());
+
+            driveTrain.driveSteering(drivePower, steering);
+
+            double error = goals[1] - leftDrive.getCurrentPosition();
+            double goal =  goals[1];
+
+            telemetry.addData("stuff", " error (%.2f), goal (%.2f)", error, goal);
+            telemetry.update();
+        }
         }
 
-        }
+    public double getAngle() {
+        angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        double deltaAngle = angles.firstAngle;
+
+        deltaAngle -= angleOfset;
+
+        if (deltaAngle < -180)
+            deltaAngle += 360;
+        else if (deltaAngle > 180)
+            deltaAngle -= 360;
+
+        return(deltaAngle);
+    }
+
+    public void zeroGyro() {
+        angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        angleOfset = angles.firstAngle;
+    }
     }

@@ -73,8 +73,8 @@ public class Thread_test extends LinearOpMode {
         double KiDist = 0;
         double KdDist = .4;
 
-        double KpStr = .02;
-        double KiStr = .000106;
+        double KpStr = .01;
+        double KiStr = .0;
         double KdStr = 0;
 
         //#0 arm goal
@@ -115,13 +115,14 @@ public class Thread_test extends LinearOpMode {
         Thread1z.start();
         while (opModeIsActive()) {
 
+            double angle = getAngle();
             arm.setMode((DcMotor.RunMode.RUN_WITHOUT_ENCODER));
             leftDrive.setMode((DcMotor.RunMode.RUN_WITHOUT_ENCODER));
             rightDrive.setMode((DcMotor.RunMode.RUN_WITHOUT_ENCODER));
 
             Inputs[0] = arm.getCurrentPosition();
             Inputs[1] = leftDrive.getCurrentPosition();
-            Inputs[2] = (int) getAngle();
+            Inputs[2] = (int) angle;
 
             goals = DataPassz.getGoals();
             DataPassz.setInputs(Inputs);
@@ -130,14 +131,18 @@ public class Thread_test extends LinearOpMode {
             arm.setPower(armPower);
 
             double drivePower = distance_PID.runPID(goals[1], leftDrive.getCurrentPosition());
-            double steering = steering_PID.runPID(goals[2], getAngle());
+            double steering = steering_PID.runPID(goals[2], angle);
 
             driveTrain.driveSteering(drivePower, steering);
 
-            double error = goals[1] - leftDrive.getCurrentPosition();
-            double goal =  goals[1];
+            double error = goals[2] - angle;
+            double pwr =  rightDrive.getPower();
 
-            telemetry.addData("stuff", " error (%.2f), goal (%.2f)", error, goal);
+            angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+            double rawange = angles.firstAngle;
+
+
+            telemetry.addData("stuff", " error (%.2f), pwr (%.2f), angle (%.2f), angle (%.2f)", error, pwr,angle,rawange);
             telemetry.update();
         }
         }
@@ -148,11 +153,12 @@ public class Thread_test extends LinearOpMode {
 
         deltaAngle -= angleOfset;
 
-        if (deltaAngle < -180)
+        if (deltaAngle < -180) {
             deltaAngle += 360;
-        else if (deltaAngle > 180)
+        }
+        else if (deltaAngle > 180) {
             deltaAngle -= 360;
-
+        }
         return(deltaAngle);
     }
 

@@ -113,13 +113,14 @@ public class Thread_test extends LinearOpMode {
         waitForStart();
         runtime.reset();
         Thread1z.start();
+
+        arm.setMode((DcMotor.RunMode.RUN_WITHOUT_ENCODER));
+        leftDrive.setMode((DcMotor.RunMode.RUN_WITHOUT_ENCODER));
+        rightDrive.setMode((DcMotor.RunMode.RUN_WITHOUT_ENCODER));
+
         while (opModeIsActive()) {
 
             double angle = getAngle();
-            arm.setMode((DcMotor.RunMode.RUN_WITHOUT_ENCODER));
-            leftDrive.setMode((DcMotor.RunMode.RUN_WITHOUT_ENCODER));
-            rightDrive.setMode((DcMotor.RunMode.RUN_WITHOUT_ENCODER));
-
             Inputs[0] = arm.getCurrentPosition();
             Inputs[1] = leftDrive.getCurrentPosition();
             Inputs[2] = (int) angle;
@@ -127,15 +128,26 @@ public class Thread_test extends LinearOpMode {
             goals = DataPassz.getGoals();
             DataPassz.setInputs(Inputs);
 
+            double angleGoal = goals[2];
+
+            if (angleGoal > 150 && angle < 0 && angle > -181){
+                angle = angle + 360;
+                angleGoal = angleGoal + 360;
+            }
+            if (angleGoal < -150 && angle > 0 && angle < 181){
+                angle = angle - 360;
+                angleGoal = angleGoal - 360;
+            }
+
             double armPower = arm_PID.runPID(goals[0], arm.getCurrentPosition());
             arm.setPower(armPower);
 
             double drivePower = distance_PID.runPID(goals[1], leftDrive.getCurrentPosition());
-            double steering = steering_PID.runPID(goals[2], angle);
+            double steering = steering_PID.runPID(angleGoal, angle);
 
             driveTrain.driveSteering(drivePower, steering);
 
-            double error = goals[2] - angle;
+            double error = angleGoal - angle;
             double pwr =  rightDrive.getPower();
 
             angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
@@ -153,12 +165,10 @@ public class Thread_test extends LinearOpMode {
 
         deltaAngle -= angleOfset;
 
-        if (deltaAngle < -180) {
-            deltaAngle += 360;
-        }
-        else if (deltaAngle > 180) {
-            deltaAngle -= 360;
-        }
+        //if(deltaAngle < 0) {
+         //   deltaAngle += 360;
+        //}
+
         return(deltaAngle);
     }
 

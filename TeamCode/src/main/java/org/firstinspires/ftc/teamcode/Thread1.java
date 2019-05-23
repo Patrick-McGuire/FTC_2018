@@ -23,12 +23,12 @@ public class Thread1 extends Thread{
       //waitDist(20, .2);
 
       setGoals(400,0,180);
-      //waitAngle(5,1);
+      waitAngle(15,1);
 
-      //setGoals(400,0,-180);
-      //waitAngle(5,1);
+      setGoals(400,0,-180);
+      waitAngle(15,1);
 
-      //setGoals(400,0,0);
+      setGoals(400,0,0);
     }
 
     public void setGoals(int arm, int distance, int angle){

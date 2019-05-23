@@ -132,11 +132,11 @@ public class Thread_test extends LinearOpMode {
 
             if (angleGoal > 150 && angle < 0 && angle > -181){
                 angle = angle + 360;
-                angleGoal = angleGoal + 360;
+                //angleGoal = angleGoal + 360;
             }
             if (angleGoal < -150 && angle > 0 && angle < 181){
                 angle = angle - 360;
-                angleGoal = angleGoal - 360;
+                //angleGoal = angleGoal - 360;
             }
 
             double armPower = arm_PID.runPID(goals[0], arm.getCurrentPosition());

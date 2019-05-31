@@ -14,6 +14,7 @@ public class Arm {
     private DcMotor armMotor;
     public PID arm_PID = new PID(Kp, Ki, Kd);;
 
+    public Arm(DcMotor arm){
         armMotor = arm;
     }
 

@@ -19,16 +19,19 @@ public class Thread1 extends Thread{
 
     public void run(){
 
-      //setGoals(400,500,0);
-      //waitDist(20, .2);
+      setGoals(400,1000,0);
+      waitDist(20, .2);
+
+      setGoals(400,1000,90);
+      waitAngle(15,1);
+
+      setGoals(400,500,90);
+      waitDist(20, .2);
+
+      setGoals(400,500,180);
+      waitAngle(15,1);
 
       setGoals(400,0,180);
-      waitAngle(15,1);
-
-      setGoals(400,0,-180);
-      waitAngle(15,1);
-
-      setGoals(400,0,0);
     }
 
     public void setGoals(int arm, int distance, int angle){

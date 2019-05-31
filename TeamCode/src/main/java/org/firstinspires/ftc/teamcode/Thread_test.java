@@ -73,9 +73,9 @@ public class Thread_test extends LinearOpMode {
         double KiDist = 0;
         double KdDist = .4;
 
-        double KpStr = .01;
-        double KiStr = .0;
-        double KdStr = 0;
+        double KpStr = .02;
+        double KiStr = .0001;
+        double KdStr = 0.06;
 
         //#0 arm goal
         //#1 distance
@@ -121,23 +121,25 @@ public class Thread_test extends LinearOpMode {
         while (opModeIsActive()) {
 
             double angle = getAngle();
-            Inputs[0] = arm.getCurrentPosition();
-            Inputs[1] = leftDrive.getCurrentPosition();
-            Inputs[2] = (int) angle;
+
 
             goals = DataPassz.getGoals();
-            DataPassz.setInputs(Inputs);
+
 
             double angleGoal = goals[2];
 
             if (angleGoal > 150 && angle < 0 && angle > -181){
                 angle = angle + 360;
-                //angleGoal = angleGoal + 360;
             }
             if (angleGoal < -150 && angle > 0 && angle < 181){
                 angle = angle - 360;
-                //angleGoal = angleGoal - 360;
             }
+            Inputs[0] = arm.getCurrentPosition();
+            Inputs[1] = leftDrive.getCurrentPosition();
+            Inputs[2] = (int) angle;
+
+            DataPassz.setInputs(Inputs);
+
 
             double armPower = arm_PID.runPID(goals[0], arm.getCurrentPosition());
             arm.setPower(armPower);
@@ -165,9 +167,10 @@ public class Thread_test extends LinearOpMode {
 
         deltaAngle -= angleOfset;
 
-        //if(deltaAngle < 0) {
-         //   deltaAngle += 360;
-        //}
+        if (deltaAngle < -180)
+            deltaAngle += 360;
+        else if (deltaAngle > 180)
+            deltaAngle -= 360;
 
         return(deltaAngle);
     }

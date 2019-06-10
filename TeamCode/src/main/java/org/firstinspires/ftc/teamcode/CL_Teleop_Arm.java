@@ -81,7 +81,18 @@ public class CL_Teleop_Arm extends LinearOpMode {
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
             double angle = getAngle();
-            steering = -gamepad1.left_stick_x;
+
+            double st = gamepad1.left_stick_x;
+
+            if (st < 0) {
+                steering = ((st * st)) * .7 + .3;
+            }
+            else if (st > 0) {
+                steering = -(st * st) * .7 + -.3;
+            } else{
+                steering = 0;
+            }
+
 
             if (steering != 0) {
                 runtime.reset();
@@ -157,7 +168,7 @@ public class CL_Teleop_Arm extends LinearOpMode {
                 armGoal = 90;
             }
             if(gamepad1.a){
-                armGoal = 135;
+                armGoal = 151;
             }
 
             if(gamepad1.start && gamepad1.left_stick_button){
@@ -171,7 +182,7 @@ public class CL_Teleop_Arm extends LinearOpMode {
 
             armGoal = armGoal + (gamepad1.right_stick_y * 1.3);
             // Show the elapsed game time and wheel power.
-            telemetry.addData("stuff", " armPower (%.2f), armEncoder (%.2f), Kp (%.2f, Goal (%.2f), Kd (%.2f), Ki (%.2f), error (%.2f), pitch (%.2f)", armPower, test, Kp, targetAngle, Kd, Ki * 100000, targetAngle-angle, getPitch());
+            telemetry.addData("stuff", " armPower (%.2f), armEncoder (%.2f), Kp (%.2f, Goal (%.2f), Kd (%.2f), Ki (%.2f), error (%.2f), pitch (%.2f), pitch (%.2f)", armPower, test, Kp, targetAngle, Kd, Ki * 100000, targetAngle-angle, getPitch(),st);
             telemetry.update();
         }
     }

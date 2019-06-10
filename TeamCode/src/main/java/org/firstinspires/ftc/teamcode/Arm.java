@@ -8,7 +8,7 @@ public class Arm {
     double Ki = .00006;
     double Kd = .04;
     double Kf = -0.25;
-    double zeoPos = -120;
+    double zeoPos = -125;
     boolean enable = true;
 
     private DcMotor armMotor;
